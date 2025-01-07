@@ -86,7 +86,6 @@ namespace Gazeus.DesafioMatch3
         }
         public void StopSelectionEffect()
         {
-            Debug.Log($"Stoped the selected effect");
             _SelectedEffect.GetComponent<ParticleSystem>().Stop();
         }
     }
