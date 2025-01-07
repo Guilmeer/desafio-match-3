@@ -261,5 +261,66 @@ namespace Gazeus.DesafioMatch3.Core
 
             return false;
         }
+
+        public List<List<Vector2Int>> IdentifyIndependentMatches(List<Vector2Int> matchedPositions)
+        {
+            List<List<Vector2Int>> separateMatches = new List<List<Vector2Int>>();
+            HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
+
+            foreach (var position in matchedPositions)
+            {
+                if (visited.Contains(position)) continue;
+
+                List<Vector2Int> cluster = new List<Vector2Int> { position };
+                visited.Add(position);
+
+                // Check if the cluster is exactly 3 tiles
+                if (cluster.Count == 3)
+                {
+                    separateMatches.Add(new List<Vector2Int>(cluster));
+                }
+                else
+                {
+                    // Find connected tiles that should be part of the same cluster
+                    Queue<Vector2Int> toCheck = new Queue<Vector2Int>();
+                    toCheck.Enqueue(position);
+
+                    while (toCheck.Count > 0)
+                    {
+                        Vector2Int current = toCheck.Dequeue();
+                        Vector2Int[] directions = {
+                            new Vector2Int(1, 0), new Vector2Int(-1, 0),
+                            new Vector2Int(0, 1), new Vector2Int(0, -1)
+                        };
+
+                        foreach (var dir in directions)
+                        {
+                            Vector2Int neighbor = current + dir;
+                            if (matchedPositions.Contains(neighbor) && !visited.Contains(neighbor))
+                            {
+                                cluster.Add(neighbor);
+                                visited.Add(neighbor);
+                                toCheck.Enqueue(neighbor);
+                            }
+                        }
+                    }
+
+                    if (cluster.Count == 3)
+                    {
+                        separateMatches.Add(cluster); // Exactly 3 -> SimplePopEffect
+                    }
+                    else if (cluster.Count == 4)
+                    {
+                        separateMatches.Add(cluster); // Exactly 4 -> SecondEffect
+                    }
+                    else if (cluster.Count > 4)
+                    {
+                        separateMatches.Add(cluster); // More than 3 -> SecondEffect + ScreenEffect
+                    }
+                }
+            }
+            return separateMatches;
+        }
+
     }
 }

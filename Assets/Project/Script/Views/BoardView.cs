@@ -5,6 +5,7 @@ using Gazeus.DesafioMatch3.Models;
 using Gazeus.DesafioMatch3.ScriptableObjects;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 namespace Gazeus.DesafioMatch3.Views
 {
@@ -14,6 +15,8 @@ namespace Gazeus.DesafioMatch3.Views
 
         [SerializeField] private GridLayoutGroup _boardContainer;
         [SerializeField] private TilePrefabRepository _tilePrefabRepository;
+        [SerializeField] private GameObject _CustomTilePrefab;
+        [SerializeField] private TileColorRepository _tileColorRepository;
         [SerializeField] private TileSpotView _tileSpotPrefab;
 
         private GameObject[][] _tiles;
@@ -42,8 +45,10 @@ namespace Gazeus.DesafioMatch3.Views
                     int tileTypeIndex = board[y][x].Type;
                     if (tileTypeIndex > -1)
                     {
-                        GameObject tilePrefab = _tilePrefabRepository.TileTypePrefabList[tileTypeIndex];
+                        GameObject tilePrefab = _CustomTilePrefab;
                         GameObject tile = Instantiate(tilePrefab);
+                        tile.GetComponent<UnityEngine.UI.Image>().color = _tileColorRepository.TilecolorList[tileTypeIndex];
+                        //! SET COLORS
                         tileSpot.SetTile(tile);
 
                         _tiles[y][x] = tile;
@@ -62,8 +67,10 @@ namespace Gazeus.DesafioMatch3.Views
 
                 TileSpotView tileSpot = _tileSpots[position.y][position.x];
 
-                GameObject tilePrefab = _tilePrefabRepository.TileTypePrefabList[addedTileInfo.Type];
+                GameObject tilePrefab = _CustomTilePrefab;
+
                 GameObject tile = Instantiate(tilePrefab);
+                tile.GetComponent<UnityEngine.UI.Image>().color = _tileColorRepository.TilecolorList[addedTileInfo.Type];
                 tileSpot.SetTile(tile);
 
                 _tiles[position.y][position.x] = tile;
@@ -117,6 +124,15 @@ namespace Gazeus.DesafioMatch3.Views
             return sequence;
         }
 
+        public GameObject GetTileAtPosition(int x, int y)
+        {
+            if (_tiles[y][x] != null)
+            {
+                return _tiles[y][x];
+            }
+            return null;
+        }
+
         public Tween SwapTiles(int fromX, int fromY, int toX, int toY)
         {
             Sequence sequence = DOTween.Sequence();
@@ -126,6 +142,18 @@ namespace Gazeus.DesafioMatch3.Views
             (_tiles[toY][toX], _tiles[fromY][fromX]) = (_tiles[fromY][fromX], _tiles[toY][toX]);
 
             return sequence;
+        }
+
+        public Vector3 GetTileWorldPosition(int x, int y)
+        {
+            if (x >= 0 && x < _tiles.Length && y >= 0 && y < _tiles[x].Length)
+            {
+                return _tiles[y][x] != null ? _tiles[y][x].transform.position : Vector3.zero;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException("The provided indices are out of range.");
+            }
         }
 
         #region Events
